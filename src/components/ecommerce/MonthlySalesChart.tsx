@@ -3,95 +3,101 @@ import type { ApexOptions } from "apexcharts";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { MoreDotIcon } from "../../icons";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useTheme } from "../../context/ThemeContext";
 
 export default function MonthlySalesChart() {
-  const options: ApexOptions = {
-    colors: ["#465fff"],
-    chart: {
-      fontFamily: "Outfit, sans-serif",
-      type: "bar",
-      height: 180,
-      toolbar: {
-        show: false,
-      },
-    },
-    plotOptions: {
-      bar: {
-        horizontal: false,
-        columnWidth: "39%",
-        borderRadius: 5,
-        borderRadiusApplication: "end",
-      },
-    },
-    dataLabels: {
-      enabled: false,
-    },
-    stroke: {
-      show: true,
-      width: 4,
-      colors: ["transparent"],
-    },
-    xaxis: {
-      categories: [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ],
-      axisBorder: {
-        show: false,
-      },
-      axisTicks: {
-        show: false,
-      },
-    },
-    legend: {
-      show: true,
-      position: "top",
-      horizontalAlign: "left",
-      fontFamily: "Outfit",
-    },
-    yaxis: {
-      title: {
-        text: undefined,
-      },
-    },
-    grid: {
-      yaxis: {
-        lines: {
-          show: true,
-        },
-      },
-    },
-    fill: {
-      opacity: 1,
-    },
+  const { theme } = useTheme();
+  const [chartOptions, setChartOptions] = useState<ApexOptions>({});
+  const [isOpen, setIsOpen] = useState(false);
 
-    tooltip: {
-      x: {
-        show: false,
-      },
-      y: {
-        formatter: (val: number) => `${val}`,
-      },
-    },
-  };
   const series = [
     {
       name: "Sales",
       data: [168, 385, 201, 298, 187, 195, 291, 110, 215, 390, 280, 112],
     },
   ];
-  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    setChartOptions({
+      colors: ["#465fff"],
+      chart: {
+        fontFamily: "Outfit, sans-serif",
+        type: "bar",
+        height: 180,
+        toolbar: {
+          show: false,
+        },
+      },
+      plotOptions: {
+        bar: {
+          horizontal: false,
+          columnWidth: "39%",
+          borderRadius: 5,
+          borderRadiusApplication: "end",
+        },
+      },
+      dataLabels: {
+        enabled: false,
+      },
+      stroke: {
+        show: true,
+        width: 4,
+        colors: ["transparent"],
+      },
+      xaxis: {
+        categories: [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "May",
+          "Jun",
+          "Jul",
+          "Aug",
+          "Sep",
+          "Oct",
+          "Nov",
+          "Dec",
+        ],
+        axisBorder: {
+          show: false,
+        },
+        axisTicks: {
+          show: false,
+        },
+      },
+      legend: {
+        show: true,
+        position: "top",
+        horizontalAlign: "left",
+        fontFamily: "Outfit",
+      },
+      yaxis: {
+        title: {
+          text: undefined,
+        },
+      },
+      grid: {
+        yaxis: {
+          lines: {
+            show: true,
+          },
+        },
+      },
+      fill: {
+        opacity: 1,
+      },
+      tooltip: {
+        x: {
+          show: false,
+        },
+        y: {
+          formatter: (val: number) => `${val}`,
+        },
+      },
+    });
+  }, [theme]);
 
   function toggleDropdown() {
     setIsOpen(!isOpen);
@@ -133,7 +139,9 @@ export default function MonthlySalesChart() {
 
       <div className="max-w-full overflow-x-auto custom-scrollbar">
         <div className="-ml-5 min-w-[650px] xl:min-w-full pl-2">
-          <Chart options={options} series={series} type="bar" height={180} />
+          {Object.keys(chartOptions).length > 0 && (
+            <Chart options={chartOptions} series={series} type="bar" height={180} />
+          )}
         </div>
       </div>
     </div>
