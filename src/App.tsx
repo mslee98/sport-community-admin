@@ -1,22 +1,25 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import AppLayout from "./layout/AppLayout";
-import { ThemeProvider } from "./context/ThemeContext";
+import { ThemeProvider, useTheme } from "./context/ThemeContext";
 import { AuthProvider } from "./context/AuthContext";
 import { AuthGuard } from "./components/auth/AuthGuard";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import Home from "./pages/Dashboard/Home";
 import { ScrollToTop } from './components/common/ScrollToTop';
 import NotFound from './pages/OtherPage/NotFound';
 import SignIn from './pages/AuthPages/SignIn';
 import SignUp from './pages/AuthPages/SignUp';
+import UserManagement from './pages/UserManagement/UserManagement';
 
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
+  const { theme } = useTheme();
+
   return (
-    <BrowserRouter>
-      <ThemeProvider>
-        <AuthProvider>
-          <ScrollToTop />
-          <Routes>
+    <>
+      <ScrollToTop />
+      <Routes>
             {/* Auth Routes - No Layout */}
             <Route index path="/" element={
               <AuthGuard requireAuth={false}>
@@ -41,9 +44,36 @@ const App: React.FC = () => {
                   <Home />
                 </AuthGuard>
               } />
+              <Route path="/user-management" element={
+                <AuthGuard requireAuth={true}>
+                  <UserManagement />
+                </AuthGuard>
+              } />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme={theme}
+      />
+    </>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <BrowserRouter>
+      <ThemeProvider>
+        <AuthProvider>
+          <AppContent />
         </AuthProvider>
       </ThemeProvider>
     </BrowserRouter>

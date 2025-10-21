@@ -38,8 +38,8 @@ const navItems: NavItem[] = [
   },
   {
     icon: <UserCircleIcon />,
-    name: "User Profile",
-    path: "/profile",
+    name: "사용자 관리",
+    path: "/user-management",
   },
   {
     name: "Forms",
