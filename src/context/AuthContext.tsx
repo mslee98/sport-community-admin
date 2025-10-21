@@ -3,6 +3,7 @@ import type { User, Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 import type { UserInfo, LoginRequest, SignUpRequest } from '../types/auth'
 import { signIn as authSignIn, signUp as authSignUp } from '../services/auth'
+import { getGravatarUrl } from '../utils/gravatar'
 
 interface AuthContextType {
   user: User | null
@@ -12,6 +13,8 @@ interface AuthContextType {
   signIn: (id: string, password: string) => Promise<{ error: Error | null }>
   signUp: (signUpData: SignUpRequest) => Promise<{ error: Error | null }>
   signOut: () => Promise<void>
+  // Gravatar 아바타 URL 생성 함수
+  getAvatarUrl: (size?: number) => string | null
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -44,7 +47,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     return () => subscription.unsubscribe()
   }, [])
-
+  
   const signIn = async (id: string, password: string) => {
     const result = await authSignIn({ id, password })
     if (result.user && result.userInfo) {
@@ -72,6 +75,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUserInfo(null)
   }
 
+  // Gravatar 아바타 URL 생성 함수
+  const getAvatarUrl = (size: number = 40): string | null => {
+    if (!user?.email) return null
+    return getGravatarUrl(user.email, size)
+  }
+
   const value = {
     user,
     session,
@@ -80,6 +89,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     signIn,
     signUp,
     signOut,
+    getAvatarUrl,
   }
 
   return (
