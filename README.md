@@ -50,17 +50,41 @@ git clone https://github.com/your-username/sport-community-admin.git
 cd sport-community-admin
 ```
 
-### 2. 의존성 설치
+### 2. 환경 변수 설정
+프로젝트 루트에 `.env.local` 파일을 생성하고 다음 내용을 추가하세요:
+
+```bash
+# Supabase Configuration (로컬 개발용)
+VITE_SUPABASE_URL=https://your-local-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your_local_anon_key_here
+
+# 애플리케이션 설정
+VITE_APP_ENV=development
+VITE_APP_NAME=Sport Community Admin
+```
+
+**운영환경용 설정**:
+```bash
+# Supabase Configuration (운영용)
+VITE_SUPABASE_URL=https://your-production-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your_production_anon_key_here
+
+# 애플리케이션 설정
+VITE_APP_ENV=production
+VITE_APP_NAME=Sport Community Admin
+```
+
+### 3. 의존성 설치
 ```bash
 npm install --legacy-peer-deps
 ```
 
-### 3. 개발 서버 실행
+### 4. 개발 서버 실행
 ```bash
 npm run dev
 ```
 
-### 4. 브라우저에서 확인
+### 5. 브라우저에서 확인
 ```
 http://localhost:5173
 ```
@@ -222,3 +246,51 @@ npm run preview
 
 ### 정적 파일 서빙
 빌드된 파일은 `dist/` 폴더에 생성되며, 모든 정적 파일 서버에서 호스팅할 수 있습니다.
+
+## 커밋 규칙
+
+### 기본 구조
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+### Type 종류
+- **feat**: 새로운 기능 추가
+- **fix**: 버그 수정
+- **docs**: 문서 수정
+- **style**: 코드 포맷팅, 세미콜론 누락 등
+- **refactor**: 코드 리팩토링
+- **test**: 테스트 코드 추가/수정
+- **chore**: 빌드 과정, 패키지 매니저 설정 등
+- **setup**: 프로젝트 초기 설정
+- **config**: 설정 파일 변경
+
+### Scope 예시
+- **auth**: 인증 관련
+- **ui**: UI 컴포넌트
+- **api**: API 관련
+- **db**: 데이터베이스
+- **config**: 설정
+- **deps**: 의존성
+
+### 커밋 예시
+```bash
+# 기능 추가
+feat(auth): Supabase 인증 시스템 구현
+
+# 버그 수정
+fix(ui): 사이드바 토글 버튼 클릭 이벤트 수정
+
+# 문서 수정
+docs: README에 커밋 규칙 추가
+
+# 설정 변경
+config: Tailwind CSS 4 설정 업데이트
+
+# 의존성 추가
+chore(deps): clsx, tailwind-merge 패키지 설치
+```

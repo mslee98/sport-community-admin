@@ -12,6 +12,7 @@
   "dependencies": {
     "@react-jvectormap/core": "^1.0.4",
     "@react-jvectormap/world": "^1.1.2",
+    "@supabase/supabase-js": "^2.76.0",
     "@tailwindcss/vite": "^4.1.15",
     "apexcharts": "^4.1.0",
     "clsx": "^2.1.1",
