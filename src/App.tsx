@@ -5,6 +5,8 @@ import { AuthProvider } from "./context/AuthContext";
 import { AuthGuard } from "./components/auth/AuthGuard";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 import Home from "./pages/Dashboard/Home";
 import { ScrollToTop } from './components/common/ScrollToTop';
@@ -12,6 +14,19 @@ import NotFound from './pages/OtherPage/NotFound';
 import SignIn from './pages/AuthPages/SignIn';
 import SignUp from './pages/AuthPages/SignUp';
 import UserManagement from './pages/UserManagement/UserManagement';
+
+import SiteManagement from './pages/SiteManagement/SiteManagement';
+
+// React Query Client 설정
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5분
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
 const AppContent: React.FC = () => {
   const { theme } = useTheme();
@@ -49,6 +64,13 @@ const AppContent: React.FC = () => {
                   <UserManagement />
                 </AuthGuard>
               } />
+
+
+              <Route path="/site-management" element={
+                <AuthGuard requireAuth={true}>
+                  <SiteManagement />
+                </AuthGuard>
+              } />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
@@ -71,11 +93,14 @@ const AppContent: React.FC = () => {
 const App: React.FC = () => {
   return (
     <BrowserRouter>
-      <ThemeProvider>
-        <AuthProvider>
-          <AppContent />
-        </AuthProvider>
-      </ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <AuthProvider>
+            <AppContent />
+          </AuthProvider>
+        </ThemeProvider>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
     </BrowserRouter>
   );
 };

@@ -30,16 +30,19 @@ export const fetchAllUsers = async (): Promise<{
 };
 
 /**
- * 필터링된 회원 목록 조회
+ * 필터링된 회원 목록 조회 (페이지네이션 포함)
  */
 export const fetchFilteredUsers = async (
-  filter: UserListFilter
+  filter: UserListFilter,
+  page: number = 1,
+  pageSize: number = 10
 ): Promise<{
   data: UserInfo[] | null;
+  totalCount: number;
   error: Error | null;
 }> => {
   try {
-    let query = supabase.from("UserInfo").select("*");
+    let query = supabase.from("UserInfo").select("*", { count: 'exact' });
 
     // 권한 필터
     if (filter.role) {
@@ -58,20 +61,29 @@ export const fetchFilteredUsers = async (
       );
     }
 
-    const { data, error } = await query.order("created_at", {
-      ascending: false,
-    });
+    // 페이지네이션 적용
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+    
+    const { data, error, count } = await query
+      .order("created_at", { ascending: false })
+      .range(from, to);
 
     if (error) {
       console.error("Error fetching filtered users:", error);
-      return { data: null, error: new Error(error.message) };
+      return { data: null, totalCount: 0, error: new Error(error.message) };
     }
 
-    return { data, error: null };
+    return { 
+      data, 
+      totalCount: count || 0, 
+      error: null 
+    };
   } catch (err) {
     console.error("Unexpected error fetching filtered users:", err);
     return {
       data: null,
+      totalCount: 0,
       error: err instanceof Error ? err : new Error("Unknown error"),
     };
   }
