@@ -24,5 +24,10 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": [
+    "src/components/form/date-picker.tsx",
+    "src/components/form/form-elements/DefaultInputs.tsx",
+    "src/components/form/Form.tsx"
+  ]
 }

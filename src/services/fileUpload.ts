@@ -1,21 +1,21 @@
 import { supabase } from "../lib/supabase";
 
 // 환경 변수 검증 함수
-const validateEnvVars = () => {
-  const requiredVars = [
-    'VITE_SUPABASE_URL',
-    'VITE_SUPABASE_ANON_KEY'
-  ];
+// const validateEnvVars = () => {
+//   const requiredVars = [
+//     'VITE_SUPABASE_URL',
+//     'VITE_SUPABASE_ANON_KEY'
+//   ];
   
-  const missingVars = requiredVars.filter(varName => !import.meta.env[varName]);
+//   const missingVars = requiredVars.filter(varName => !import.meta.env[varName]);
   
-  if (missingVars.length > 0) {
-    console.warn(`Missing environment variables: ${missingVars.join(', ')}`);
-    console.warn('Please check your .env.local file and ensure all required variables are set.');
-  }
+//   if (missingVars.length > 0) {
+//     console.warn(`Missing environment variables: ${missingVars.join(', ')}`);
+//     console.warn('Please check your .env.local file and ensure all required variables are set.');
+//   }
   
-  return missingVars.length === 0;
-};
+//   return missingVars.length === 0;
+// };
 
 // 환경 변수 디버깅 함수
 export const debugEnvVars = () => {
@@ -47,7 +47,7 @@ export const debugSupabaseConnection = async () => {
     if (fileError) console.log('File 테이블 에러:', fileError);
     
     // File 테이블 직접 삽입 테스트
-    const { data: insertTest, error: insertError } = await supabase
+    const { error: insertError } = await supabase
       .from('File')
       .insert({
         file_name: 'test-debug.jpg',

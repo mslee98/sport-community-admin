@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { uploadImage, deleteImage } from '../../services/fileUpload';
 
@@ -17,7 +17,7 @@ export const ImageUpload = ({
   onImageRemove,
   currentImageUrl,
   currentFileSeq,
-  accept = "image/*",
+  accept: _accept = "image/*",
   maxSize = 5, // 5MB
   className = ""
 }: ImageUploadProps) => {

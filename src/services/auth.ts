@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase'
 import type { User, Session } from '@supabase/supabase-js'
-import type { UserInfo, AuthInfo, LoginRequest, LoginResponse, SignUpRequest } from '../types/auth'
+import type { UserInfo, LoginRequest, LoginResponse, SignUpRequest } from '../types/auth'
 
 
 /**

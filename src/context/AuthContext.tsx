@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import type { User, Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
-import type { UserInfo, LoginRequest, SignUpRequest } from '../types/auth'
+import type { UserInfo, SignUpRequest } from '../types/auth'
 import { signIn as authSignIn, signUp as authSignUp } from '../services/auth'
 import { getGravatarUrl } from '../utils/gravatar'
 
@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     // 인증 상태 변화 감지
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      async (_event, session) => {
         setSession(session)
         setUser(session?.user ?? null)
         setLoading(false)
