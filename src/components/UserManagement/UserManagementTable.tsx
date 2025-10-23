@@ -114,12 +114,9 @@ export default function UserManagementTable() {
       updateUser(userId, updates),
     onSuccess: (response) => {
       if (response.data) {
-        // 캐시 업데이트
-        queryClient.setQueryData(['users'], (oldData: UserInfo[] | undefined) =>
-          oldData?.map((user) =>
-            user.id === response.data!.id ? response.data! : user
-          ) || []
-        );
+        // 모든 사용자 관련 쿼리 무효화하여 리스트 갱신
+        queryClient.invalidateQueries({ queryKey: ['users'] });
+        queryClient.invalidateQueries({ queryKey: ['userCounts'] });
         toast.success("회원 정보가 저장되었습니다.");
         setEditingUser(null);
         setEditValues({});
