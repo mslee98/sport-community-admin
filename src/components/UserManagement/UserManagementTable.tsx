@@ -9,6 +9,7 @@ import {
 
 import Badge from "../ui/badge/Badge";
 import Pagination from "../common/Pagination";
+import LoadingSpinner from "../common/LoadingSpinner";
 import type { UserInfo, UserRole, UpdateUserInfoRequest, UserListFilter } from "../../types/userInfo";
 import { fetchFilteredUsers, updateUser } from "../../services/userInfo";
 import { toast } from 'react-toastify';
@@ -184,7 +185,7 @@ export default function UserManagementTable() {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500"></div>
+          <LoadingSpinner size="md" />
           <p className="mt-4 text-gray-500 dark:text-gray-400">데이터를 불러오는 중...</p>
         </div>
       </div>

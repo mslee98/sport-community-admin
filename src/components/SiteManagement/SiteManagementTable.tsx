@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Table,
   TableBody,
@@ -9,6 +10,7 @@ import {
 
 import Badge from "../ui/badge/Badge";
 import Pagination from "../common/Pagination";
+import LoadingSpinner from "../common/LoadingSpinner";
 import type { Site, SiteFilter, UpdateSiteRequest } from "../../types/site";
 import { fetchFilteredSites, updateSite, deleteSite } from "../../services/site";
 import { toast } from 'react-toastify';
@@ -16,6 +18,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { SiteRegistrationModal } from './SiteRegistrationModal';
 
 export function SiteManagementTable() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [editingSite, setEditingSite] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<UpdateSiteRequest>({});
@@ -257,7 +260,7 @@ export function SiteManagementTable() {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500"></div>
+          <LoadingSpinner size="md" />
           <p className="mt-4 text-gray-500 dark:text-gray-400">데이터를 불러오는 중...</p>
         </div>
       </div>
@@ -659,7 +662,7 @@ export function SiteManagementTable() {
                         />
                       ) : (
                         <button
-                          onClick={() => window.location.href = `/site-management/${site.site_seq}`}
+                          onClick={() => navigate(`/site-management/${site.site_seq}`)}
                           className="text-brand-500 hover:text-brand-600 dark:text-brand-400 dark:hover:text-brand-300 underline"
                         >
                           {site.name}
