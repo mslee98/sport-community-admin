@@ -64,6 +64,22 @@ export interface SiteDepositPromotion {
   updated_at: string;
 }
 
+export interface SiteEvent {
+  site_event_seq: string;
+  site_seq: string;
+  name: string; // 이벤트 이름
+  description?: string; // 이벤트 설명
+  event_type: 'bonus' | 'cashback' | 'tournament' | 'special' | 'seasonal'; // 이벤트 타입
+  status: 'before' | 'ongoing' | 'ended'; // 이벤트 상태
+  start_date?: string; // 이벤트 시작일 (선택사항 - 없으면 상시 진행)
+  end_date?: string; // 이벤트 종료일 (선택사항 - 없으면 종료 기한 없음)
+  is_featured: boolean; // 추천 이벤트 여부
+  display_order: number; // 표시 순서
+  view_count: number; // 조회수
+  created_at: string;
+  updated_at: string;
+}
+
 // SitePromotion 테이블 타입 정의 (입플 정보) - 호환성을 위해 유지
 export interface SitePromotion {
   promotion_seq: string;

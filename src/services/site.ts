@@ -1,5 +1,5 @@
 import { supabase } from "../lib/supabase";
-import type { Site, SiteInfo, SiteDepositPromotion, SiteFilter, UpdateSiteRequest, UpdateSiteInfoRequest, SiteRegistrationData } from "../types/site";
+import type { Site, SiteInfo, SiteDepositPromotion, SiteEvent, SiteFilter, UpdateSiteRequest, UpdateSiteInfoRequest, SiteRegistrationData } from "../types/site";
 import { deleteImage } from "./fileUpload";
 
 /**
@@ -703,6 +703,142 @@ export const updateSiteInfo = async (
     console.error("Unexpected error updating site info:", err);
     return {
       data: null,
+      error: err instanceof Error ? err : new Error("Unknown error"),
+    };
+  }
+};
+
+/**
+ * 사이트 이벤트 목록 조회
+ */
+export const fetchSiteEvents = async (siteSeq: string): Promise<{
+  data: SiteEvent[] | null;
+  error: Error | null;
+}> => {
+  try {
+    const { data, error } = await supabase
+      .from("SiteEvent")
+      .select("*")
+      .eq("site_seq", siteSeq)
+      .order("display_order", { ascending: true });
+
+    if (error) {
+      console.error("Error fetching site events:", error);
+      return { data: null, error: new Error(error.message) };
+    }
+
+    return { data, error: null };
+  } catch (err) {
+    console.error("Unexpected error fetching site events:", err);
+    return {
+      data: null,
+      error: err instanceof Error ? err : new Error("Unknown error"),
+    };
+  }
+};
+
+/**
+ * 사이트 이벤트 추가
+ */
+export const addSiteEvent = async (
+  siteSeq: string,
+  eventData: Omit<SiteEvent, "site_event_seq" | "site_seq" | "created_at" | "updated_at" | "view_count">
+): Promise<{
+  data: SiteEvent | null;
+  error: Error | null;
+}> => {
+  try {
+    const insertData = {
+      site_seq: siteSeq,
+      ...eventData,
+      view_count: 0,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    console.log('Supabase에 전송할 데이터:', insertData);
+
+    const { data, error } = await supabase
+      .from("SiteEvent")
+      .insert(insertData)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error adding site event:", error);
+      return { data: null, error: new Error(error.message) };
+    }
+
+    console.log('Supabase 응답 데이터:', data);
+    return { data, error: null };
+  } catch (err) {
+    console.error("Unexpected error adding site event:", err);
+    return {
+      data: null,
+      error: err instanceof Error ? err : new Error("Unknown error"),
+    };
+  }
+};
+
+/**
+ * 사이트 이벤트 수정
+ */
+export const updateSiteEvent = async (
+  eventSeq: string,
+  updates: Partial<Omit<SiteEvent, "site_event_seq" | "site_seq" | "created_at" | "updated_at">>
+): Promise<{
+  data: SiteEvent | null;
+  error: Error | null;
+}> => {
+  try {
+    const { data, error } = await supabase
+      .from("SiteEvent")
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("site_event_seq", eventSeq)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error updating site event:", error);
+      return { data: null, error: new Error(error.message) };
+    }
+
+    return { data, error: null };
+  } catch (err) {
+    console.error("Unexpected error updating site event:", err);
+    return {
+      data: null,
+      error: err instanceof Error ? err : new Error("Unknown error"),
+    };
+  }
+};
+
+/**
+ * 사이트 이벤트 삭제
+ */
+export const deleteSiteEvent = async (
+  eventSeq: string
+): Promise<{
+  error: Error | null;
+}> => {
+  try {
+    const { error } = await supabase
+      .from("SiteEvent")
+      .delete()
+      .eq("site_event_seq", eventSeq);
+
+    if (error) {
+      console.error("Error deleting site event:", error);
+      return { error: new Error(error.message) };
+    }
+
+    return { error: null };
+  } catch (err) {
+    console.error("Unexpected error deleting site event:", err);
+    return {
       error: err instanceof Error ? err : new Error("Unknown error"),
     };
   }
