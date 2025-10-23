@@ -117,12 +117,20 @@ export function SiteManagementTable() {
       updateSite(siteSeq, updates),
     onSuccess: (response) => {
       if (response.data) {
-        // 캐시 업데이트
-        queryClient.setQueryData(['sites'], (oldData: Site[] | undefined) =>
-          oldData?.map((site) =>
-            site.site_seq === response.data!.site_seq ? response.data! : site
-          ) || []
-        );
+        // 현재 쿼리 키로 캐시 업데이트
+        queryClient.setQueryData(['sites', filter, currentPage, pageSize], (oldData: any) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            sites: oldData.sites.map((site: Site) =>
+              site.site_seq === response.data!.site_seq ? response.data! : site
+            )
+          };
+        });
+        
+        // 모든 사이트 관련 쿼리 무효화 (안전장치)
+        queryClient.invalidateQueries({ queryKey: ['sites'] });
+        
         toast.success("사이트 정보가 저장되었습니다.");
         setEditingSite(null);
         setEditValues({});
@@ -572,7 +580,13 @@ export function SiteManagementTable() {
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-center text-theme-xs dark:text-gray-400"
               >
-                사이트 정보
+                사이트명
+              </TableCell>
+              <TableCell
+                isHeader
+                className="px-5 py-3 font-medium text-gray-500 text-center text-theme-xs dark:text-gray-400"
+              >
+                URL
               </TableCell>
               <TableCell
                 isHeader
@@ -628,35 +642,42 @@ export function SiteManagementTable() {
                       </div>
                     )}
                   </TableCell>
-                  {/* 사이트 정보 */}
+                  {/* 사이트명 */}
                   <TableCell className="px-5 py-4 sm:px-6 text-start">
-                    <div>
-                      <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                        {isEditing ? (
-                          <input
-                            type="text"
-                            value={editValues.name || site.name}
-                            onChange={(e) =>
-                              setEditValues({
-                                ...editValues,
-                                name: e.target.value,
-                              })
-                            }
-                            className="w-full px-2 py-1 text-sm border rounded dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-                          />
-                        ) : (
-                          site.name
-                        )}
-                      </span>
-                      <a 
-                        href={site.url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="block text-brand-500 hover:text-brand-600 dark:text-brand-400 dark:hover:text-brand-300 text-theme-xs underline"
-                      >
-                        {site.url}
-                      </a>
-                    </div>
+                    <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={editValues.name || site.name}
+                          onChange={(e) =>
+                            setEditValues({
+                              ...editValues,
+                              name: e.target.value,
+                            })
+                          }
+                          className="w-full px-2 py-1 text-sm border rounded dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                        />
+                      ) : (
+                        <button
+                          onClick={() => window.location.href = `/site-management/${site.site_seq}`}
+                          className="text-brand-500 hover:text-brand-600 dark:text-brand-400 dark:hover:text-brand-300 underline"
+                        >
+                          {site.name}
+                        </button>
+                      )}
+                    </span>
+                  </TableCell>
+                  
+                  {/* URL */}
+                  <TableCell className="px-5 py-4 sm:px-6 text-start">
+                    <a 
+                      href={site.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="block text-brand-500 hover:text-brand-600 dark:text-brand-400 dark:hover:text-brand-300 text-theme-xs underline"
+                    >
+                      {site.url}
+                    </a>
                   </TableCell>
 
                   {/* 타입 */}

@@ -3,6 +3,8 @@ export interface Site {
   site_seq: string;
   name: string;
   url: string;
+  join_url?: string; // 가입 주소
+  join_code?: string; // 가입 코드
   type: 'casino' | 'sports' | 'holdem' | 'sport' | 'mixed';
   is_recommend: boolean;
   recommend_order: number;
@@ -42,7 +44,27 @@ export interface SiteFilter {
   search?: string;
 }
 
-// SitePromotion 테이블 타입 정의 (입플 정보)
+// SiteDepositPromotion 테이블 타입 정의 (입플 정보)
+export interface SiteDepositPromotion {
+  promotion_seq: string;
+  site_seq: string;
+  promotion_name: string; // 프로모션 이름
+  deposit_type: 'first' | 'repeat' | 'daily' | 'weekly' | 'monthly' | 'special'; // 입금 타입
+  bonus_rate: number; // 보너스 비율 (%)
+  bonus_amount: number; // 고정 보너스 금액
+  max_bonus: number; // 최대 보너스 금액
+  min_deposit: number; // 최소 입금액
+  rollover_requirement: number; // 롤링 요구사항 (배수)
+  valid_days: number; // 유효 기간 (일)
+  description?: string; // 프로모션 설명
+  terms_conditions?: string; // 이용 약관
+  is_active: boolean; // 활성화 여부
+  display_order: number; // 표시 순서
+  created_at: string;
+  updated_at: string;
+}
+
+// SitePromotion 테이블 타입 정의 (입플 정보) - 호환성을 위해 유지
 export interface SitePromotion {
   promotion_seq: string;
   site_seq: string;
@@ -102,4 +124,19 @@ export interface UpdateSiteRequest {
   subscriber_count?: number;
   view_count?: number;
   avg_rating?: number;
+}
+
+// SiteInfo 업데이트 요청 타입 정의
+export interface UpdateSiteInfoRequest {
+  deposit_min?: number;
+  first_bonus?: number;
+  repeat_bonus?: number;
+  casino_payback?: number;
+  slot_payback?: number;
+  rolling_rate?: number;
+  bet_limit_min?: number;
+  bet_limit_max?: number;
+  site_feature?: string;
+  deposit_method?: string;
+  withdrawal_method?: string;
 }

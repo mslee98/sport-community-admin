@@ -16,6 +16,7 @@ import SignUp from './pages/AuthPages/SignUp';
 import UserManagement from './pages/UserManagement/UserManagement';
 
 import SiteManagement from './pages/SiteManagement/SiteManagement';
+import SiteDetail from './pages/SiteManagement/SiteDetail';
 
 // React Query Client 설정
 const queryClient = new QueryClient({
@@ -69,6 +70,11 @@ const AppContent: React.FC = () => {
               <Route path="/site-management" element={
                 <AuthGuard requireAuth={true}>
                   <SiteManagement />
+                </AuthGuard>
+              } />
+              <Route path="/site-management/:siteSeq" element={
+                <AuthGuard requireAuth={true}>
+                  <SiteDetail />
                 </AuthGuard>
               } />
               <Route path="*" element={<NotFound />} />

@@ -1,5 +1,5 @@
 import { supabase } from "../lib/supabase";
-import type { Site, SiteInfo, SiteFilter, UpdateSiteRequest, SiteRegistrationData } from "../types/site";
+import type { Site, SiteInfo, SiteDepositPromotion, SiteFilter, UpdateSiteRequest, UpdateSiteInfoRequest, SiteRegistrationData } from "../types/site";
 import { deleteImage } from "./fileUpload";
 
 /**
@@ -512,27 +512,195 @@ export const previewSiteDeletion = async (
 export const fetchSiteWithInfo = async (
   siteSeq: string
 ): Promise<{
-  data: (Site & { site_info?: SiteInfo }) | null;
+  data: (Site & { site_info?: SiteInfo; promotions?: SiteDepositPromotion[] }) | null;
+  error: Error | null;
+}> => {
+  try {
+    // 먼저 Site 정보 조회
+    const { data: siteData, error: siteError } = await supabase
+      .from("Site")
+      .select("*")
+      .eq("site_seq", siteSeq)
+      .single();
+
+    if (siteError) {
+      console.error("Error fetching site:", siteError);
+      return { data: null, error: new Error(siteError.message) };
+    }
+
+    if (!siteData) {
+      return { data: null, error: new Error("Site not found") };
+    }
+
+    // SiteInfo 정보 조회
+    const { data: siteInfoData, error: siteInfoError } = await supabase
+      .from("SiteInfo")
+      .select("*")
+      .eq("site_seq", siteSeq)
+      .single();
+
+    // SiteDepositPromotion 정보 조회
+    const { data: promotionsData, error: promotionsError } = await supabase
+      .from("SiteDepositPromotion")
+      .select("*")
+      .eq("site_seq", siteSeq)
+      .order("created_at", { ascending: false });
+
+    if (siteInfoError) {
+      console.warn("SiteInfo not found for site:", siteSeq, siteInfoError);
+    }
+
+    if (promotionsError) {
+      console.warn("SiteDepositPromotion not found for site:", siteSeq, promotionsError);
+    }
+
+    return { 
+      data: { 
+        ...siteData, 
+        site_info: siteInfoData || undefined,
+        promotions: promotionsData || []
+      }, 
+      error: null 
+    };
+  } catch (err) {
+    console.error("Unexpected error fetching site with info:", err);
+    return {
+      data: null,
+      error: err instanceof Error ? err : new Error("Unknown error"),
+    };
+  }
+};
+
+/**
+ * 입플 프로모션 추가
+ */
+export const addPromotion = async (
+  siteSeq: string,
+  promotionData: Omit<SiteDepositPromotion, 'promotion_seq' | 'site_seq' | 'created_at' | 'updated_at'>
+): Promise<{
+  data: SiteDepositPromotion | null;
   error: Error | null;
 }> => {
   try {
     const { data, error } = await supabase
-      .from("Site")
-      .select(`
-        *,
-        site_info:SiteInfo(*)
-      `)
-      .eq("site_seq", siteSeq)
+      .from("SiteDepositPromotion")
+      .insert({
+        site_seq: siteSeq,
+        ...promotionData,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .select()
       .single();
 
     if (error) {
-      console.error("Error fetching site with info:", error);
+      console.error("Error adding promotion:", error);
       return { data: null, error: new Error(error.message) };
     }
 
     return { data, error: null };
   } catch (err) {
-    console.error("Unexpected error fetching site with info:", err);
+    console.error("Unexpected error adding promotion:", err);
+    return {
+      data: null,
+      error: err instanceof Error ? err : new Error("Unknown error"),
+    };
+  }
+};
+
+/**
+ * 입플 프로모션 수정
+ */
+export const updatePromotion = async (
+  promotionSeq: string,
+  updates: Partial<Omit<SiteDepositPromotion, 'promotion_seq' | 'site_seq' | 'created_at' | 'updated_at'>>
+): Promise<{
+  data: SiteDepositPromotion | null;
+  error: Error | null;
+}> => {
+  try {
+    const { data, error } = await supabase
+      .from("SiteDepositPromotion")
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("promotion_seq", promotionSeq)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error updating promotion:", error);
+      return { data: null, error: new Error(error.message) };
+    }
+
+    return { data, error: null };
+  } catch (err) {
+    console.error("Unexpected error updating promotion:", err);
+    return {
+      data: null,
+      error: err instanceof Error ? err : new Error("Unknown error"),
+    };
+  }
+};
+
+/**
+ * 입플 프로모션 삭제
+ */
+export const deletePromotion = async (
+  promotionSeq: string
+): Promise<{
+  error: Error | null;
+}> => {
+  try {
+    const { error } = await supabase
+      .from("SiteDepositPromotion")
+      .delete()
+      .eq("promotion_seq", promotionSeq);
+
+    if (error) {
+      console.error("Error deleting promotion:", error);
+      return { error: new Error(error.message) };
+    }
+
+    return { error: null };
+  } catch (err) {
+    console.error("Unexpected error deleting promotion:", err);
+    return {
+      error: err instanceof Error ? err : new Error("Unknown error"),
+    };
+  }
+};
+
+/**
+ * SiteInfo 정보 수정
+ */
+export const updateSiteInfo = async (
+  siteSeq: string,
+  updates: UpdateSiteInfoRequest
+): Promise<{
+  data: SiteInfo | null;
+  error: Error | null;
+}> => {
+  try {
+    const { data, error } = await supabase
+      .from("SiteInfo")
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("site_seq", siteSeq)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error updating site info:", error);
+      return { data: null, error: new Error(error.message) };
+    }
+
+    return { data, error: null };
+  } catch (err) {
+    console.error("Unexpected error updating site info:", err);
     return {
       data: null,
       error: err instanceof Error ? err : new Error("Unknown error"),
