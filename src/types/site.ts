@@ -140,6 +140,7 @@ export interface UpdateSiteRequest {
   subscriber_count?: number;
   view_count?: number;
   avg_rating?: number;
+  logo_image?: string | null; // 로고 이미지 UUID
 }
 
 // SiteInfo 업데이트 요청 타입 정의

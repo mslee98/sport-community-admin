@@ -1,11 +1,13 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import ComponentCard from "../../components/common/ComponentCard.tsx";
 import { PageMeta } from "../../components/common/PageMeta.tsx";
 import LoadingSpinner from "../../components/common/LoadingSpinner.tsx";
 import { SiteEventModal } from "../../components/SiteManagement/SiteEventModal.tsx";
+import { ImageUpload } from '../../components/common/ImageUpload';
+import Label from '../../components/form/Label';
 import { fetchSiteWithInfo, addPromotion, updatePromotion, deletePromotion, updateSite, updateSiteInfo, fetchSiteEvents, deleteSiteEvent } from '../../services/site';
 import type { Site, SiteDepositPromotion, SiteEvent } from '../../types/site';
 
@@ -27,6 +29,11 @@ export default function SiteDetail() {
     type: 'casino' as 'casino' | 'sports' | 'holdem' | 'sport' | 'mixed',
     status: 'active' as 'active' | 'suspended' | 'closed',
   });
+  
+  // 로고 이미지 관련 상태
+  const [logoImage, setLogoImage] = useState<string | null>(null);
+  const [logoImageUrl, setLogoImageUrl] = useState<string | null>(null);
+  const [originalLogoImage, setOriginalLogoImage] = useState<string | null>(null);
   const [siteInfoForm, setSiteInfoForm] = useState({
     deposit_min: 0,
     first_bonus: 0,
@@ -95,14 +102,27 @@ export default function SiteDetail() {
 
   const logoUrl = logoData;
 
+  // 로고 URL 변경 시 상태 업데이트
+  useEffect(() => {
+    if (logoUrl && !logoImageUrl) {
+      setLogoImageUrl(logoUrl);
+    }
+  }, [logoUrl, logoImageUrl]);
+
   // 사이트 기본 정보 수정 mutation
   const updateSiteMutation = useMutation({
-    mutationFn: ({ siteSeq, updates }: { siteSeq: string; updates: { name: string; url: string; type: 'casino' | 'sports' | 'holdem' | 'sport' | 'mixed'; status: 'active' | 'suspended' | 'closed' } }) =>
+    mutationFn: ({ siteSeq, updates }: { siteSeq: string; updates: any }) =>
       updateSite(siteSeq, updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['site', siteSeq] });
+      queryClient.invalidateQueries({ queryKey: ['site-logo', logoImage] });
       toast.success('사이트 기본 정보가 수정되었습니다.');
       setIsEditingBasicInfo(false);
+      // 상태 초기화
+      setBasicInfoForm({ name: '', url: '', type: 'casino', status: 'active' });
+      setLogoImage(null);
+      setLogoImageUrl(null);
+      setOriginalLogoImage(null);
     },
     onError: (error) => {
       toast.error(`사이트 정보 수정에 실패했습니다: ${error.message}`);
@@ -197,19 +217,43 @@ export default function SiteDetail() {
         type: site.type,
         status: site.status,
       });
+      
+      // 기존 로고 이미지 정보 설정
+      setLogoImage(site.logo_image || null);
+      setOriginalLogoImage(site.logo_image || null);
       setIsEditingBasicInfo(true);
     }
   };
 
   const handleSaveBasicInfo = () => {
     if (siteSeq) {
-      updateSiteMutation.mutate({ siteSeq, updates: basicInfoForm });
+      // 로고 이미지가 변경되었는지 확인
+      const logoUpdate = logoImage !== originalLogoImage ? { logo_image: logoImage } : {};
+      
+      updateSiteMutation.mutate({ 
+        siteSeq, 
+        updates: { ...basicInfoForm, ...logoUpdate } 
+      });
     }
   };
 
   const handleCancelBasicInfoEdit = () => {
     setIsEditingBasicInfo(false);
     setBasicInfoForm({ name: '', url: '', type: 'casino', status: 'active' });
+    setLogoImage(null);
+    setLogoImageUrl(null);
+    setOriginalLogoImage(null);
+  };
+  
+  // 로고 이미지 핸들러
+  const handleLogoUpload = (fileSeq: string, fileUrl: string) => {
+    setLogoImage(fileSeq);
+    setLogoImageUrl(fileUrl);
+  };
+
+  const handleLogoRemove = () => {
+    setLogoImage(null);
+    setLogoImageUrl(null);
   };
 
   const handleEditSiteInfo = () => {
@@ -664,6 +708,23 @@ export default function SiteDetail() {
                         <option value="suspended">일시중단</option>
                         <option value="closed">폐쇄</option>
                       </select>
+                    </div>
+                    <div>
+                      <Label htmlFor="logo" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        사이트 로고
+                      </Label>
+                      <ImageUpload
+                        onImageUpload={handleLogoUpload}
+                        onImageRemove={handleLogoRemove}
+                        currentImageUrl={logoImageUrl || undefined}
+                        currentFileSeq={logoImage || undefined}
+                        accept="image/*"
+                        maxSize={2}
+                        className="w-full"
+                      />
+                      <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                        권장 크기: 200x200px, 최대 2MB
+                      </p>
                     </div>
                     <div className="flex gap-2">
                       <button
