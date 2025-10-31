@@ -23,7 +23,7 @@ export interface SiteInfo {
   site_seq: string;
   deposit_min: number;
   first_bonus: number;
-  repeat_bonus: number;
+  daily_repeat_bonus: number; // repeat_bonus에서 변경
   casino_payback: number;
   slot_payback: number;
   rolling_rate: number;
@@ -34,6 +34,13 @@ export interface SiteInfo {
   withdrawal_method?: string;
   created_at: string;
   updated_at: string;
+  daily_first_bonus: number; // 매일 첫 충전 보너스율
+  slot_comp: number; // 슬릇 콤프
+  casino_comp: number; // 카지노 콤프
+  casino_bonus: number; // 카지노 보너스
+  slot_bonus: number; // 슬릇 보너스
+  sport_bonus: number; // 스포츠 보너스
+  sport_payback: number; // 스포츠 페이백(낙첨)
 }
 
 // 사이트 필터 타입 정의
@@ -113,7 +120,7 @@ export interface SiteRegistrationData {
   // 상세 정보
   deposit_min: number;
   first_bonus: number;
-  repeat_bonus: number;
+  daily_repeat_bonus: number; // repeat_bonus에서 변경
   casino_payback: number;
   slot_payback: number;
   rolling_rate: number;
@@ -121,6 +128,13 @@ export interface SiteRegistrationData {
   bet_limit_max: number;
   site_feature?: string;
   is_crypto?: boolean;
+  daily_first_bonus?: number; // 매일 첫 충전 보너스율
+  slot_comp?: number; // 슬릇 콤프
+  casino_comp?: number; // 카지노 콤프
+  casino_bonus?: number; // 카지노 보너스
+  slot_bonus?: number; // 슬릇 보너스
+  sport_bonus?: number; // 스포츠 보너스
+  sport_payback?: number; // 스포츠 페이백(낙첨)
 
   // 입플 정보 (배열)
   promotions: SitePromotionFormData[];
@@ -147,7 +161,7 @@ export interface UpdateSiteRequest {
 export interface UpdateSiteInfoRequest {
   deposit_min?: number;
   first_bonus?: number;
-  repeat_bonus?: number;
+  daily_repeat_bonus?: number; // repeat_bonus에서 변경
   casino_payback?: number;
   slot_payback?: number;
   rolling_rate?: number;
@@ -156,4 +170,11 @@ export interface UpdateSiteInfoRequest {
   site_feature?: string;
   deposit_method?: string;
   withdrawal_method?: string;
+  daily_first_bonus?: number; // 매일 첫 충전 보너스율
+  slot_comp?: number; // 슬릇 콤프
+  casino_comp?: number; // 카지노 콤프
+  casino_bonus?: number; // 카지노 보너스
+  slot_bonus?: number; // 슬릇 보너스
+  sport_bonus?: number; // 스포츠 보너스
+  sport_payback?: number; // 스포츠 페이백(낙첨)
 }

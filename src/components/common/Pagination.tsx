@@ -15,9 +15,6 @@ const Pagination: React.FC<PaginationProps> = ({
   pageSize,
   onPageChange,
 }) => {
-  const startItem = (currentPage - 1) * pageSize + 1;
-  const endItem = Math.min(currentPage * pageSize, totalItems);
-
   const getPageNumbers = () => {
     const pages: (number | string)[] = [];
     
@@ -55,7 +52,7 @@ const Pagination: React.FC<PaginationProps> = ({
   if (totalPages <= 1) return null;
 
   return (
-    <div className="flex flex-col items-center gap-4 border-t border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-transparent sm:px-6">
+    <div className="flex flex-col items-center gap-4 bg-white px-4 py-3 dark:bg-transparent sm:px-6">
       {/* Mobile View */}
       <div className="flex justify-center gap-3 sm:hidden">
         <button
@@ -76,15 +73,6 @@ const Pagination: React.FC<PaginationProps> = ({
 
       {/* Desktop View */}
       <div className="flex flex-col items-center gap-4 hidden sm:flex">
-        {/* 정보 텍스트 */}
-        <div className="text-center">
-          <p className="text-sm text-gray-700 dark:text-gray-300">
-            <span className="font-medium">{startItem}</span>부터{" "}
-            <span className="font-medium">{endItem}</span>까지 표시 (전체{" "}
-            <span className="font-medium">{totalItems}</span>개)
-          </p>
-        </div>
-
         {/* 페이지 네비게이션 */}
         <div className="flex justify-center">
           <nav

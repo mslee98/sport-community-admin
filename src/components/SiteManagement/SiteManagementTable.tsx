@@ -118,21 +118,14 @@ export function SiteManagementTable() {
   const updateSiteMutation = useMutation({
     mutationFn: ({ siteSeq, updates }: { siteSeq: string; updates: UpdateSiteRequest }) =>
       updateSite(siteSeq, updates),
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       if (response.data) {
-        // 현재 쿼리 키로 캐시 업데이트
-        queryClient.setQueryData(['sites', filter, currentPage, pageSize], (oldData: any) => {
-          if (!oldData) return oldData;
-          return {
-            ...oldData,
-            sites: oldData.sites.map((site: Site) =>
-              site.site_seq === response.data!.site_seq ? response.data! : site
-            )
-          };
-        });
+        // 모든 사이트 관련 쿼리 무효화 및 즉시 refetch
+        await queryClient.invalidateQueries({ queryKey: ['sites'] });
+        await queryClient.invalidateQueries({ queryKey: ['siteCounts'] });
         
-        // 모든 사이트 관련 쿼리 무효화 (안전장치)
-        queryClient.invalidateQueries({ queryKey: ['sites'] });
+        // 현재 쿼리도 즉시 refetch
+        await refetch();
         
         toast.success("사이트 정보가 저장되었습니다.");
         setEditingSite(null);
@@ -147,10 +140,15 @@ export function SiteManagementTable() {
   // 사이트 삭제 mutation
   const deleteSiteMutation = useMutation({
     mutationFn: (siteSeq: string) => deleteSite(siteSeq),
-    onSuccess: () => {
+    onSuccess: async () => {
+      // 모든 사이트 관련 쿼리 무효화 및 즉시 refetch
+      await queryClient.invalidateQueries({ queryKey: ['sites'] });
+      await queryClient.invalidateQueries({ queryKey: ['siteCounts'] });
+      
+      // 현재 쿼리도 즉시 refetch
+      await refetch();
+      
       toast.success("사이트가 삭제되었습니다.");
-      queryClient.invalidateQueries({ queryKey: ['sites'] });
-      queryClient.invalidateQueries({ queryKey: ['siteCounts'] });
     },
     onError: (error) => {
       toast.error(`사이트 삭제에 실패했습니다: ${error.message}`);
@@ -408,9 +406,9 @@ export function SiteManagementTable() {
         </div>
 
         {/* 하단 컨트롤 - 빈 상태일 때도 표시 */}
-        <div className="flex flex-col items-center justify-between px-4 py-5 xl:px-6 xl:py-6 border-t border-gray-200 dark:border-white/[0.05] sm:flex-row">
+        <div className="relative flex flex-col items-center px-4 py-5 xl:px-6 xl:py-6">
           {/* 페이지네이션 - 빈 상태일 때는 숨김 */}
-          <div className="flex justify-center sm:justify-start">
+          <div className="flex justify-center w-full">
             {totalPages > 0 && (
               <Pagination
                 currentPage={currentPage}
@@ -422,11 +420,36 @@ export function SiteManagementTable() {
             )}
           </div>
 
-          {/* 등록 버튼 */}
-          <div className="mt-4 sm:mt-0">
+          {/* 등록 버튼 - 우측 절대 위치 */}
+          <div className="absolute right-4 xl:right-6 top-1/2 -translate-y-1/2 mt-0 hidden sm:block">
             <button
               onClick={() => setIsModalOpen(true)}
-              className="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600 transition-colors"
+              className="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600 transition-colors whitespace-nowrap"
+            >
+              <svg
+                className="fill-current"
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M10 3C10.4142 3 10.75 3.33579 10.75 3.75V9.25H16.25C16.6642 9.25 17 9.58579 17 10C17 10.4142 16.6642 10.75 16.25 10.75H10.75V16.25C10.75 16.6642 10.4142 17 10 17C9.58579 17 9.25 16.6642 9.25 16.25V10.75H3.75C3.33579 10.75 3 10.4142 3 10C3 9.58579 3.33579 9.25 3.75 9.25H9.25V3.75C9.25 3.33579 9.58579 3 10 3Z"
+                  fill="currentColor"
+                />
+              </svg>
+              사이트 등록
+            </button>
+          </div>
+
+          {/* 모바일용 등록 버튼 */}
+          <div className="mt-4 sm:hidden w-full flex justify-center">
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600 transition-colors whitespace-nowrap"
             >
               <svg
                 className="fill-current"
@@ -822,9 +845,9 @@ export function SiteManagementTable() {
       </div>
       
       {/* 하단 컨트롤 */}
-      <div className="flex flex-col items-center justify-between px-4 py-5 xl:px-6 xl:py-6 border-t border-gray-200 dark:border-white/[0.05] sm:flex-row">
+      <div className="relative flex flex-col items-center px-4 py-5 xl:px-6 xl:py-6">
         {/* 페이지네이션 */}
-        <div className="flex justify-center sm:justify-start">
+        <div className="flex justify-center w-full">
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
@@ -834,11 +857,36 @@ export function SiteManagementTable() {
           />
         </div>
 
-        {/* 등록 버튼 */}
-        <div className="mt-4 sm:mt-0">
+        {/* 등록 버튼 - 우측 절대 위치 */}
+        <div className="absolute right-4 xl:right-6 top-1/2 -translate-y-1/2 mt-0 hidden sm:block">
           <button
             onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600 transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600 transition-colors whitespace-nowrap"
+          >
+            <svg
+              className="fill-current"
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                fillRule="evenodd"
+                clipRule="evenodd"
+                d="M10 3C10.4142 3 10.75 3.33579 10.75 3.75V9.25H16.25C16.6642 9.25 17 9.58579 17 10C17 10.4142 16.6642 10.75 16.25 10.75H10.75V16.25C10.75 16.6642 10.4142 17 10 17C9.58579 17 9.25 16.6642 9.25 16.25V10.75H3.75C3.33579 10.75 3 10.4142 3 10C3 9.58579 3.33579 9.25 3.75 9.25H9.25V3.75C9.25 3.33579 9.58579 3 10 3Z"
+                fill="currentColor"
+              />
+            </svg>
+            사이트 등록
+          </button>
+        </div>
+
+        {/* 모바일용 등록 버튼 */}
+        <div className="mt-4 sm:hidden w-full flex justify-center">
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600 transition-colors whitespace-nowrap"
           >
             <svg
               className="fill-current"

@@ -25,7 +25,7 @@ export const SiteRegistrationModal = ({ isOpen, onClose }: SiteRegistrationModal
     // 상세 정보
     deposit_min: 0,
     first_bonus: 0,
-    repeat_bonus: 0,
+    daily_repeat_bonus: 0,
     casino_payback: 0,
     slot_payback: 0,
     rolling_rate: 0,
@@ -33,6 +33,13 @@ export const SiteRegistrationModal = ({ isOpen, onClose }: SiteRegistrationModal
     bet_limit_max: 0,
     site_feature: '',
     is_crypto: false,
+    daily_first_bonus: 0,
+    slot_comp: 0,
+    casino_comp: 0,
+    casino_bonus: 0,
+    slot_bonus: 0,
+    sport_bonus: 0,
+    sport_payback: 0,
     
     // 입플 정보
     promotions: [{
@@ -69,7 +76,7 @@ export const SiteRegistrationModal = ({ isOpen, onClose }: SiteRegistrationModal
       status: 'active',
       deposit_min: 0,
       first_bonus: 0,
-      repeat_bonus: 0,
+      daily_repeat_bonus: 0,
       casino_payback: 0,
       slot_payback: 0,
       rolling_rate: 0,
@@ -77,6 +84,13 @@ export const SiteRegistrationModal = ({ isOpen, onClose }: SiteRegistrationModal
       bet_limit_max: 0,
       site_feature: '',
       is_crypto: false,
+      daily_first_bonus: 0,
+      slot_comp: 0,
+      casino_comp: 0,
+      casino_bonus: 0,
+      slot_bonus: 0,
+      sport_bonus: 0,
+      sport_payback: 0,
       promotions: [{
         bonus_rate: 0,
         bonus_amount: 0,
@@ -414,10 +428,10 @@ export const SiteRegistrationModal = ({ isOpen, onClose }: SiteRegistrationModal
                   />
                 </div>
 
-                {/* 첫 충전 보너스 */}
+                {/* 가입 첫 충전 보너스 */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    첫 충전 보너스 (%)
+                    가입 첫 충전 보너스 (%)
                   </label>
                   <input
                     type="number"
@@ -429,17 +443,32 @@ export const SiteRegistrationModal = ({ isOpen, onClose }: SiteRegistrationModal
                   />
                 </div>
 
-                {/* 매 충전 보너스 */}
+                {/* 매일 첫 충전 보너스 */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    매 충전 보너스 (%)
+                    매일 첫 충전 보너스 (%)
                   </label>
                   <input
                     type="number"
                     min="0"
                     step="0.01"
-                    value={formData.repeat_bonus}
-                    onChange={(e) => handleInputChange('repeat_bonus', parseFloat(e.target.value) || 0)}
+                    value={formData.daily_first_bonus}
+                    onChange={(e) => handleInputChange('daily_first_bonus', parseFloat(e.target.value) || 0)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  />
+                </div>
+
+                {/* 매일 매 충전 보너스 */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    매일 매 충전 보너스 (%)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={formData.daily_repeat_bonus}
+                    onChange={(e) => handleInputChange('daily_repeat_bonus', parseFloat(e.target.value) || 0)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                   />
                 </div>
@@ -544,6 +573,96 @@ export const SiteRegistrationModal = ({ isOpen, onClose }: SiteRegistrationModal
                       가상화폐 입출금 지원
                     </span>
                   </label>
+                </div>
+
+                {/* 슬릇 콤프 */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    슬릇 콤프 (%)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={formData.slot_comp}
+                    onChange={(e) => handleInputChange('slot_comp', parseFloat(e.target.value) || 0)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  />
+                </div>
+
+                {/* 카지노 콤프 */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    카지노 콤프 (%)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={formData.casino_comp}
+                    onChange={(e) => handleInputChange('casino_comp', parseFloat(e.target.value) || 0)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  />
+                </div>
+
+                {/* 카지노 충전 보너스 */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    카지노 충전 보너스 (%)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={formData.casino_bonus}
+                    onChange={(e) => handleInputChange('casino_bonus', parseFloat(e.target.value) || 0)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  />
+                </div>
+
+                {/* 슬릇 충전 보너스 */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    슬릇 충전 보너스 (%)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={formData.slot_bonus}
+                    onChange={(e) => handleInputChange('slot_bonus', parseFloat(e.target.value) || 0)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  />
+                </div>
+
+                {/* 스포츠 충전 보너스 */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    스포츠 충전 보너스 (%)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={formData.sport_bonus}
+                    onChange={(e) => handleInputChange('sport_bonus', parseFloat(e.target.value) || 0)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  />
+                </div>
+
+                {/* 스포츠 페이백 */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    스포츠 페이백 (낙첨) (%)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={formData.sport_payback}
+                    onChange={(e) => handleInputChange('sport_payback', parseFloat(e.target.value) || 0)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  />
                 </div>
               </div>
             </div>

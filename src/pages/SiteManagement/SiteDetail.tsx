@@ -37,7 +37,7 @@ export default function SiteDetail() {
   const [siteInfoForm, setSiteInfoForm] = useState({
     deposit_min: 0,
     first_bonus: 0,
-    repeat_bonus: 0,
+    daily_repeat_bonus: 0,
     casino_payback: 0,
     slot_payback: 0,
     rolling_rate: 0,
@@ -46,6 +46,13 @@ export default function SiteDetail() {
     site_feature: '',
     deposit_method: '',
     withdrawal_method: '',
+    daily_first_bonus: 0,
+    slot_comp: 0,
+    casino_comp: 0,
+    casino_bonus: 0,
+    slot_bonus: 0,
+    sport_bonus: 0,
+    sport_payback: 0,
   });
 
   const [promotionForm, setPromotionForm] = useState({
@@ -113,9 +120,15 @@ export default function SiteDetail() {
   const updateSiteMutation = useMutation({
     mutationFn: ({ siteSeq, updates }: { siteSeq: string; updates: any }) =>
       updateSite(siteSeq, updates),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['site', siteSeq] });
-      queryClient.invalidateQueries({ queryKey: ['site-logo', logoImage] });
+    onSuccess: async () => {
+      // 사이트 상세 정보 무효화
+      await queryClient.invalidateQueries({ queryKey: ['site', siteSeq] });
+      await queryClient.invalidateQueries({ queryKey: ['site-logo', logoImage] });
+      
+      // 사이트 리스트도 무효화하여 목록 페이지에서도 즉시 반영되도록
+      await queryClient.invalidateQueries({ queryKey: ['sites'] });
+      await queryClient.invalidateQueries({ queryKey: ['siteCounts'] });
+      
       toast.success('사이트 기본 정보가 수정되었습니다.');
       setIsEditingBasicInfo(false);
       // 상태 초기화
@@ -261,7 +274,7 @@ export default function SiteDetail() {
       setSiteInfoForm({
         deposit_min: siteInfo.deposit_min || 0,
         first_bonus: siteInfo.first_bonus || 0,
-        repeat_bonus: siteInfo.repeat_bonus || 0,
+        daily_repeat_bonus: siteInfo.daily_repeat_bonus || 0,
         casino_payback: siteInfo.casino_payback || 0,
         slot_payback: siteInfo.slot_payback || 0,
         rolling_rate: siteInfo.rolling_rate || 0,
@@ -270,6 +283,13 @@ export default function SiteDetail() {
         site_feature: siteInfo.site_feature || '',
         deposit_method: siteInfo.deposit_method || '',
         withdrawal_method: siteInfo.withdrawal_method || '',
+        daily_first_bonus: siteInfo.daily_first_bonus || 0,
+        slot_comp: siteInfo.slot_comp || 0,
+        casino_comp: siteInfo.casino_comp || 0,
+        casino_bonus: siteInfo.casino_bonus || 0,
+        slot_bonus: siteInfo.slot_bonus || 0,
+        sport_bonus: siteInfo.sport_bonus || 0,
+        sport_payback: siteInfo.sport_payback || 0,
       });
       setIsEditingSiteInfo(true);
     }
@@ -286,7 +306,7 @@ export default function SiteDetail() {
     setSiteInfoForm({
       deposit_min: 0,
       first_bonus: 0,
-      repeat_bonus: 0,
+      daily_repeat_bonus: 0,
       casino_payback: 0,
       slot_payback: 0,
       rolling_rate: 0,
@@ -295,6 +315,13 @@ export default function SiteDetail() {
       site_feature: '',
       deposit_method: '',
       withdrawal_method: '',
+      daily_first_bonus: 0,
+      slot_comp: 0,
+      casino_comp: 0,
+      casino_bonus: 0,
+      slot_bonus: 0,
+      sport_bonus: 0,
+      sport_payback: 0,
     });
   };
 
@@ -825,154 +852,285 @@ export default function SiteDetail() {
                 </div>
 
                 {isEditingSiteInfo ? (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          최소 입금액 (원)
-                        </label>
-                        <input
-                          type="number"
-                          value={siteInfoForm.deposit_min}
-                          onChange={(e) => setSiteInfoForm({ ...siteInfoForm, deposit_min: Number(e.target.value) })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                          placeholder="최소 입금액"
-                        />
-                      </div>
+                  <div className="space-y-6">
+                    {/* 입출금 정보 */}
+                    <div>
+                      <h5 className="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300">입출금 정보</h5>
+                      <div className="mb-4 border-b border-gray-200 dark:border-gray-700"></div>
+                      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            최소 입금액 (원)
+                          </label>
+                          <input
+                            type="number"
+                            value={siteInfoForm.deposit_min}
+                            onChange={(e) => setSiteInfoForm({ ...siteInfoForm, deposit_min: Number(e.target.value) })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            placeholder="최소 입금액"
+                          />
+                        </div>
 
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          첫 충전 보너스 (%)
-                        </label>
-                        <input
-                          type="number"
-                          step="0.1"
-                          value={siteInfoForm.first_bonus}
-                          onChange={(e) => setSiteInfoForm({ ...siteInfoForm, first_bonus: Number(e.target.value) })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                          placeholder="첫 충전 보너스"
-                        />
-                      </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            입금 방법
+                          </label>
+                          <input
+                            type="text"
+                            value={siteInfoForm.deposit_method}
+                            onChange={(e) => setSiteInfoForm({ ...siteInfoForm, deposit_method: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            placeholder="입금 방법"
+                          />
+                        </div>
 
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          매 충전 보너스 (%)
-                        </label>
-                        <input
-                          type="number"
-                          step="0.1"
-                          value={siteInfoForm.repeat_bonus}
-                          onChange={(e) => setSiteInfoForm({ ...siteInfoForm, repeat_bonus: Number(e.target.value) })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                          placeholder="매 충전 보너스"
-                        />
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            출금 방법
+                          </label>
+                          <input
+                            type="text"
+                            value={siteInfoForm.withdrawal_method}
+                            onChange={(e) => setSiteInfoForm({ ...siteInfoForm, withdrawal_method: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            placeholder="출금 방법"
+                          />
+                        </div>
                       </div>
+                    </div>
 
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          카지노 페이백 (%)
-                        </label>
-                        <input
-                          type="number"
-                          step="0.1"
-                          value={siteInfoForm.casino_payback}
-                          onChange={(e) => setSiteInfoForm({ ...siteInfoForm, casino_payback: Number(e.target.value) })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                          placeholder="카지노 페이백"
-                        />
+                    {/* 보너스 정보 */}
+                    <div>
+                      <h5 className="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300">보너스 정보</h5>
+                      <div className="mb-4 border-b border-gray-200 dark:border-gray-700"></div>
+                      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            가입 첫 충전 보너스 (%)
+                          </label>
+                          <input
+                            type="number"
+                            step="0.1"
+                            value={siteInfoForm.first_bonus}
+                            onChange={(e) => setSiteInfoForm({ ...siteInfoForm, first_bonus: Number(e.target.value) })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            placeholder="가입 첫 충전 보너스"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            매일 첫 충전 보너스 (%)
+                          </label>
+                          <input
+                            type="number"
+                            step="0.1"
+                            value={siteInfoForm.daily_first_bonus}
+                            onChange={(e) => setSiteInfoForm({ ...siteInfoForm, daily_first_bonus: Number(e.target.value) })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            placeholder="매일 첫 충전 보너스"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            매일 매 충전 보너스 (%)
+                          </label>
+                          <input
+                            type="number"
+                            step="0.1"
+                            value={siteInfoForm.daily_repeat_bonus}
+                            onChange={(e) => setSiteInfoForm({ ...siteInfoForm, daily_repeat_bonus: Number(e.target.value) })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            placeholder="매일 매 충전 보너스"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            카지노 충전 보너스 (%)
+                          </label>
+                          <input
+                            type="number"
+                            step="0.1"
+                            value={siteInfoForm.casino_bonus}
+                            onChange={(e) => setSiteInfoForm({ ...siteInfoForm, casino_bonus: Number(e.target.value) })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            placeholder="카지노 충전 보너스"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            슬릇 충전 보너스 (%)
+                          </label>
+                          <input
+                            type="number"
+                            step="0.1"
+                            value={siteInfoForm.slot_bonus}
+                            onChange={(e) => setSiteInfoForm({ ...siteInfoForm, slot_bonus: Number(e.target.value) })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            placeholder="슬릇 충전 보너스"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            스포츠 충전 보너스 (%)
+                          </label>
+                          <input
+                            type="number"
+                            step="0.1"
+                            value={siteInfoForm.sport_bonus}
+                            onChange={(e) => setSiteInfoForm({ ...siteInfoForm, sport_bonus: Number(e.target.value) })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            placeholder="스포츠 충전 보너스"
+                          />
+                        </div>
                       </div>
+                    </div>
 
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          슬롯 페이백 (%)
-                        </label>
-                        <input
-                          type="number"
-                          step="0.1"
-                          value={siteInfoForm.slot_payback}
-                          onChange={(e) => setSiteInfoForm({ ...siteInfoForm, slot_payback: Number(e.target.value) })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                          placeholder="슬롯 페이백"
-                        />
+                    {/* 페이백 정보 */}
+                    <div>
+                      <h5 className="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300">페이백 정보</h5>
+                      <div className="mb-4 border-b border-gray-200 dark:border-gray-700"></div>
+                      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            카지노 페이백 (%)
+                          </label>
+                          <input
+                            type="number"
+                            step="0.1"
+                            value={siteInfoForm.casino_payback}
+                            onChange={(e) => setSiteInfoForm({ ...siteInfoForm, casino_payback: Number(e.target.value) })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            placeholder="카지노 페이백"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            슬롯 페이백 (%)
+                          </label>
+                          <input
+                            type="number"
+                            step="0.1"
+                            value={siteInfoForm.slot_payback}
+                            onChange={(e) => setSiteInfoForm({ ...siteInfoForm, slot_payback: Number(e.target.value) })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            placeholder="슬롯 페이백"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            스포츠 페이백 (낙첨) (%)
+                          </label>
+                          <input
+                            type="number"
+                            step="0.1"
+                            value={siteInfoForm.sport_payback}
+                            onChange={(e) => setSiteInfoForm({ ...siteInfoForm, sport_payback: Number(e.target.value) })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            placeholder="스포츠 페이백"
+                          />
+                        </div>
                       </div>
+                    </div>
 
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          롤링 비율 (%)
-                        </label>
-                        <input
-                          type="number"
-                          step="0.1"
-                          value={siteInfoForm.rolling_rate}
-                          onChange={(e) => setSiteInfoForm({ ...siteInfoForm, rolling_rate: Number(e.target.value) })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                          placeholder="롤링 비율"
-                        />
+                    {/* 콤프 정보 */}
+                    <div>
+                      <h5 className="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300">콤프 정보</h5>
+                      <div className="mb-4 border-b border-gray-200 dark:border-gray-700"></div>
+                      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            카지노 콤프 (%)
+                          </label>
+                          <input
+                            type="number"
+                            step="0.1"
+                            value={siteInfoForm.casino_comp}
+                            onChange={(e) => setSiteInfoForm({ ...siteInfoForm, casino_comp: Number(e.target.value) })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            placeholder="카지노 콤프"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            슬릇 콤프 (%)
+                          </label>
+                          <input
+                            type="number"
+                            step="0.1"
+                            value={siteInfoForm.slot_comp}
+                            onChange={(e) => setSiteInfoForm({ ...siteInfoForm, slot_comp: Number(e.target.value) })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            placeholder="슬릇 콤프"
+                          />
+                        </div>
                       </div>
+                    </div>
 
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          베팅 최소 금액 (원)
-                        </label>
-                        <input
-                          type="number"
-                          value={siteInfoForm.bet_limit_min}
-                          onChange={(e) => setSiteInfoForm({ ...siteInfoForm, bet_limit_min: Number(e.target.value) })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                          placeholder="베팅 최소 금액"
-                        />
-                      </div>
+                    {/* 베팅 및 기타 정보 */}
+                    <div>
+                      <h5 className="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300">베팅 및 기타 정보</h5>
+                      <div className="mb-4 border-b border-gray-200 dark:border-gray-700"></div>
+                      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            베팅 최소 금액 (원)
+                          </label>
+                          <input
+                            type="number"
+                            value={siteInfoForm.bet_limit_min}
+                            onChange={(e) => setSiteInfoForm({ ...siteInfoForm, bet_limit_min: Number(e.target.value) })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            placeholder="베팅 최소 금액"
+                          />
+                        </div>
 
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          베팅 최대 금액 (원)
-                        </label>
-                        <input
-                          type="number"
-                          value={siteInfoForm.bet_limit_max}
-                          onChange={(e) => setSiteInfoForm({ ...siteInfoForm, bet_limit_max: Number(e.target.value) })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                          placeholder="베팅 최대 금액"
-                        />
-                      </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            베팅 최대 금액 (원)
+                          </label>
+                          <input
+                            type="number"
+                            value={siteInfoForm.bet_limit_max}
+                            onChange={(e) => setSiteInfoForm({ ...siteInfoForm, bet_limit_max: Number(e.target.value) })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            placeholder="베팅 최대 금액"
+                          />
+                        </div>
 
-                      <div className="lg:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          사이트 특징
-                        </label>
-                        <textarea
-                          value={siteInfoForm.site_feature}
-                          onChange={(e) => setSiteInfoForm({ ...siteInfoForm, site_feature: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                          placeholder="사이트 특징을 입력하세요"
-                          rows={3}
-                        />
-                      </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            롤링 비율 (%)
+                          </label>
+                          <input
+                            type="number"
+                            step="0.1"
+                            value={siteInfoForm.rolling_rate}
+                            onChange={(e) => setSiteInfoForm({ ...siteInfoForm, rolling_rate: Number(e.target.value) })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            placeholder="롤링 비율"
+                          />
+                        </div>
 
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          입금 방법
-                        </label>
-                        <input
-                          type="text"
-                          value={siteInfoForm.deposit_method}
-                          onChange={(e) => setSiteInfoForm({ ...siteInfoForm, deposit_method: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                          placeholder="입금 방법"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          출금 방법
-                        </label>
-                        <input
-                          type="text"
-                          value={siteInfoForm.withdrawal_method}
-                          onChange={(e) => setSiteInfoForm({ ...siteInfoForm, withdrawal_method: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                          placeholder="출금 방법"
-                        />
+                        <div className="lg:col-span-2">
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            사이트 특징
+                          </label>
+                          <textarea
+                            value={siteInfoForm.site_feature}
+                            onChange={(e) => setSiteInfoForm({ ...siteInfoForm, site_feature: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            placeholder="사이트 특징을 입력하세요"
+                            rows={3}
+                          />
+                        </div>
                       </div>
                     </div>
 
@@ -993,115 +1151,213 @@ export default function SiteDetail() {
                     </div>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
-                  <div>
-                    <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                      최소 입금액
-                    </p>
-                    <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                      {siteInfo.deposit_min?.toLocaleString()}원
-                    </p>
-                  </div>
+                  <div className="space-y-6">
+                    {/* 입출금 정보 */}
+                    <div>
+                      <h5 className="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300">입출금 정보</h5>
+                      <div className="mb-4 border-b border-gray-200 dark:border-gray-700"></div>
+                      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
+                        <div>
+                          <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                            최소 입금액
+                          </p>
+                          <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+                            {siteInfo.deposit_min?.toLocaleString()}원
+                          </p>
+                        </div>
 
-                  <div>
-                    <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                      첫 충전 보너스
-                    </p>
-                    <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                      {siteInfo.first_bonus}%
-                    </p>
-                  </div>
+                        <div>
+                          <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                            입금 방법
+                          </p>
+                          <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+                            {siteInfo.deposit_method || '없음'}
+                          </p>
+                        </div>
 
-                  <div>
-                    <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                      매 충전 보너스
-                    </p>
-                    <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                      {siteInfo.repeat_bonus}%
-                    </p>
-                  </div>
+                        <div>
+                          <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                            출금 방법
+                          </p>
+                          <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+                            {siteInfo.withdrawal_method || '없음'}
+                          </p>
+                        </div>
 
-                  <div>
-                    <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                      카지노 페이백
-                    </p>
-                    <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                      {siteInfo.casino_payback}%
-                    </p>
-                  </div>
+                        <div>
+                          <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                            가상화폐 지원
+                          </p>
+                          <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+                            {siteInfo.deposit_method?.includes('가상화폐') || siteInfo.withdrawal_method?.includes('가상화폐') ? '지원' : '미지원'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
 
-                  <div>
-                    <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                      슬롯 페이백
-                    </p>
-                    <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                      {siteInfo.slot_payback}%
-                    </p>
-                  </div>
+                    {/* 보너스 정보 */}
+                    <div>
+                      <h5 className="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300">보너스 정보</h5>
+                      <div className="mb-4 border-b border-gray-200 dark:border-gray-700"></div>
+                      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
+                        <div>
+                          <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                            가입 첫 충전 보너스
+                          </p>
+                          <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+                            {siteInfo.first_bonus}%
+                          </p>
+                        </div>
 
-                  <div>
-                    <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                      롤링 비율
-                    </p>
-                    <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                      {siteInfo.rolling_rate}%
-                    </p>
-                  </div>
+                        <div>
+                          <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                            매일 첫 충전 보너스
+                          </p>
+                          <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+                            {siteInfo.daily_first_bonus || 0}%
+                          </p>
+                        </div>
 
-                  <div>
-                    <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                      베팅 최소 금액
-                    </p>
-                    <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                      {siteInfo.bet_limit_min?.toLocaleString()}원
-                    </p>
-                  </div>
+                        <div>
+                          <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                            매일 매 충전 보너스
+                          </p>
+                          <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+                            {siteInfo.daily_repeat_bonus}%
+                          </p>
+                        </div>
 
-                  <div>
-                    <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                      베팅 최대 금액
-                    </p>
-                    <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                      {siteInfo.bet_limit_max?.toLocaleString()}원
-                    </p>
-                  </div>
+                        <div>
+                          <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                            카지노 충전 보너스
+                          </p>
+                          <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+                            {siteInfo.casino_bonus || 0}%
+                          </p>
+                        </div>
 
-                  <div className="lg:col-span-2">
-                    <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                      사이트 특징
-                    </p>
-                    <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                      {siteInfo.site_feature || '없음'}
-                    </p>
-                  </div>
+                        <div>
+                          <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                            슬릇 충전 보너스
+                          </p>
+                          <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+                            {siteInfo.slot_bonus || 0}%
+                          </p>
+                        </div>
 
-                  <div>
-                    <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                      입금 방법
-                    </p>
-                    <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                      {siteInfo.deposit_method || '없음'}
-                    </p>
-                  </div>
+                        <div>
+                          <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                            스포츠 충전 보너스
+                          </p>
+                          <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+                            {siteInfo.sport_bonus || 0}%
+                          </p>
+                        </div>
+                      </div>
+                    </div>
 
-                  <div>
-                    <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                      출금 방법
-                    </p>
-                    <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                      {siteInfo.withdrawal_method || '없음'}
-                    </p>
-                  </div>
+                    {/* 페이백 정보 */}
+                    <div>
+                      <h5 className="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300">페이백 정보</h5>
+                      <div className="mb-4 border-b border-gray-200 dark:border-gray-700"></div>
+                      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
+                        <div>
+                          <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                            카지노 페이백
+                          </p>
+                          <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+                            {siteInfo.casino_payback}%
+                          </p>
+                        </div>
 
-                  <div>
-                    <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                      가상화폐 지원
-                    </p>
-                    <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                      {siteInfo.deposit_method?.includes('가상화폐') || siteInfo.withdrawal_method?.includes('가상화폐') ? '지원' : '미지원'}
-                    </p>
+                        <div>
+                          <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                            슬롯 페이백
+                          </p>
+                          <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+                            {siteInfo.slot_payback}%
+                          </p>
+                        </div>
+
+                        <div>
+                          <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                            스포츠 페이백 (낙첨)
+                          </p>
+                          <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+                            {siteInfo.sport_payback || 0}%
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 콤프 정보 */}
+                    <div>
+                      <h5 className="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300">콤프 정보</h5>
+                      <div className="mb-4 border-b border-gray-200 dark:border-gray-700"></div>
+                      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
+                        <div>
+                          <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                            카지노 콤프
+                          </p>
+                          <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+                            {siteInfo.casino_comp || 0}%
+                          </p>
+                        </div>
+
+                        <div>
+                          <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                            슬릇 콤프
+                          </p>
+                          <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+                            {siteInfo.slot_comp || 0}%
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 베팅 및 기타 정보 */}
+                    <div>
+                      <h5 className="mb-4 text-sm font-semibold text-gray-700 dark:text-gray-300">베팅 및 기타 정보</h5>
+                      <div className="mb-4 border-b border-gray-200 dark:border-gray-700"></div>
+                      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
+                        <div>
+                          <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                            베팅 최소 금액
+                          </p>
+                          <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+                            {siteInfo.bet_limit_min?.toLocaleString()}원
+                          </p>
+                        </div>
+
+                        <div>
+                          <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                            베팅 최대 금액
+                          </p>
+                          <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+                            {siteInfo.bet_limit_max?.toLocaleString()}원
+                          </p>
+                        </div>
+
+                        <div>
+                          <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                            롤링 비율
+                          </p>
+                          <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+                            {siteInfo.rolling_rate}%
+                          </p>
+                        </div>
+
+                        <div className="lg:col-span-2">
+                          <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                            사이트 특징
+                          </p>
+                          <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+                            {siteInfo.site_feature || '없음'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
                 )}
               </div>
 
